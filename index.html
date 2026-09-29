@@ -276,6 +276,8 @@ footer a { color: #888888; }
       <button id="weak-start-btn">この分野に挑戦する</button>
     </div>
     <div id="cat-list"></div>
+    <button id="share-btn" class="secondary">友だちにシェアする</button>
+    <div class="toast" id="share-toast"></div>
     <a href="#" class="back-link" id="reset-link">成績をリセットする</a>
   </div>
 
@@ -2305,6 +2307,26 @@ function copyText(text, toastEl) {
   }
 }
 
+// ホーム画面から開くとアドレスバーが無く共有できないため、サイト内に共有ボタンを置く。
+// スマホは共有シート(LINE等)を開き、非対応ブラウザではURLをコピーする。
+var SITE_URL = "https://boki3-drill.vercel.app/";
+function shareSite() {
+  if (navigator.share) {
+    navigator.share({ title: "簿記三級 仕訳ドリル", url: SITE_URL }).catch(function () {});
+    return;
+  }
+  var toastEl = byId('share-toast');
+  function done(ok) {
+    toastEl.textContent = ok ? "URLをコピーしました。" : SITE_URL;
+    setTimeout(function () { toastEl.textContent = ""; }, 3000);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(SITE_URL).then(function () { done(true); }).catch(function () { done(false); });
+  } else {
+    done(false);
+  }
+}
+
 // =========================================================
 // 結果画面
 // =========================================================
@@ -2379,6 +2401,7 @@ byId('redo-btn').addEventListener('click', redoQuestion);
 byId('prev-nav-btn').addEventListener('click', goPrev);
 byId('next-nav-btn').addEventListener('click', goNext);
 byId('copy-btn').addEventListener('click', copyCurrentForAI);
+byId('share-btn').addEventListener('click', shareSite);
 byId('retry-btn').addEventListener('click', function () { startSession(session.catId); });
 byId('summary-home-btn').addEventListener('click', renderHome);
 byId('quiz-home-link').addEventListener('click', function (ev) { ev.preventDefault(); renderHome(); });
